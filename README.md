@@ -1,4 +1,4 @@
-![stor](https://github.com/hahutton/stor/raw/master/Docs/img/stor.logo.png)
+![stor](https://github.com/hahutton/stor/raw/master/docs/img/stor.logo.png)
 
 Opinionated Azure Storage cmd line tool for copying, listing and remove blobs with NO DEPENDENCIES
 

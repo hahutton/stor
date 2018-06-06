@@ -14,18 +14,28 @@
 package cmd
 
 import (
-	"fmt"
+	//"fmt"
+	"os"
 
+	//"github.com/hahutton/stor/blob"
 	"github.com/spf13/cobra"
+	jww "github.com/spf13/jwalterweatherman"
+	//"github.com/spf13/viper"
 )
 
 // lsCmd represents the ls command
 var lsCmd = &cobra.Command{
-	Use:   "ls",
-	Short: "ls /alias/path...",
+	Use:   "ls //alias[/pathname]",
+	Short: "ls (list) blobs in an azure storage container",
 	Long:  `list the contents of an azure blob storage container or a subset thereof.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("ls called")
+
+		if !isTargetAliased(args[0]) {
+			jww.ERROR.Println("stor ls expects a storage account alias in the form of //<alias_name>.")
+			os.Exit(1)
+		}
+
+		jww.TRACE.Println("ls called")
 	},
 }
 
