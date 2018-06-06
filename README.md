@@ -43,7 +43,7 @@ Available Commands:
   rm          remove a blob or blobs
 
 Flags:
-      --config string   config file (default is ./.cflwr.yaml then $HOME/.cflwr.yaml)
+      --config string   config file (default is ./.stor.yml then $HOME/.stor.yml)
   -h, --help            help for stor
   -t, --trace           very verbose
   -v, --verbose         verbose

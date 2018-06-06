@@ -27,12 +27,12 @@ var VeryVerbose bool
 var Verbose bool
 
 var RootCmd = &cobra.Command{
-	Use:   "cflwr",
+	Use:   "stor",
 	Short: "An Azure Blob Storage utility",
-	Long: `cflwr is a cli tool to interact with azure storage.
-While cflwr aims to be a sharp tool with a more unix philosophy,
+	Long: `stor is a cli tool to interact with azure storage.
+While stor aims to be a sharp tool with a more unix philosophy,
 azcopy should be used whenever possible due to its robustness and
-feature set. cflwr aims to have no dependencies which is a difference.`,
+feature set. stor aims to have no dependencies which is a difference.`,
 }
 
 // This is called by main.main(). It only needs to happen once to the rootCmd.
@@ -46,7 +46,7 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ./.cflwr.yaml then $HOME/.cflwr.yaml)")
+	RootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is ./.stor.yml then $HOME/.stor.yml)")
 	RootCmd.PersistentFlags().BoolVarP(&VeryVerbose, "trace", "t", false, "very verbose")
 	RootCmd.PersistentFlags().BoolVarP(&Verbose, "verbose", "v", false, "verbose")
 }
@@ -76,7 +76,7 @@ func initConfig() {
 		// Search config in home directory with name ".cobra" (without extension).
 		viper.AddConfigPath(".")
 		viper.AddConfigPath(home)
-		viper.SetConfigName(".cflwr")
+		viper.SetConfigName(".stor")
 	}
 
 	viper.AutomaticEnv() // read in environment variables that match
