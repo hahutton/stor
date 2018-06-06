@@ -19,7 +19,7 @@ wget  https://hahutton.blob.core.windows.net/stor/downloads/linux/stor
 wget  https://hahutton.blob.core.windows.net/stor/downloads/windows/stor
 ```
 
-### **stor** Root Command 
+### **stor** Command 
 
 The **root** command provides top level usage and shows the full set of subcommands.
 **stor** subcommands provide the functionality.
@@ -75,7 +75,7 @@ The init (initialize) command creates a simple .stor.yml file in the pwd (presen
 placed in the user's $HOME directory where it will be used as the default configuration for stor. It can be passed to
 stor with a --config parameter to override that or even placed in the pwd of stor when executed (.).
 
-## **stor** Core Features
+## Core Features
 
 **stor** performs all data movement commands concurrently by breaking files/blobs into blocks which can be moved
 over https with multiple GETs or PUTs. The files/blobs are either chunked or stitched previous to PUTs or after GETs.
