@@ -19,6 +19,7 @@ import (
 	"crypto/md5"
 	"crypto/sha256"
 	"encoding/base64"
+	"encoding/xml"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -85,16 +86,18 @@ type SigningRequest struct {
 
 var client = retryablehttp.NewClient()
 
+func init() {
+	//Turn off debug???
+	client.Logger = nil
+}
+
 func (c *Container) TransferIn(fileName string, fileSize int64, blobName string, blockSize int) *Transfer {
-
-	//blockSize := computeBlockSize(fileSize)
-
 	return &Transfer{
 		Container:   c,
 		Type:        IN,
 		FileName:    fileName,
 		BlobName:    blobName,
-		Parallelism: 8,
+		Parallelism: 8,  //TODO used???
 		FileSize:    fileSize,
 		BlockSize:   blockSize,
 	}
@@ -113,8 +116,86 @@ func makePrefix(fileName string) string {
 
 func makeBlockId(prefix string, count int) string {
 	id := fmt.Sprintf("%s%5d", prefix, count)
-	jww.TRACE.Println("Make blockId:", id)
 	return base64.StdEncoding.EncodeToString([]byte(id))
+}
+
+func (c *Container) ListBlobs(prefix string) int {
+	datetime := time.Now().UTC().Format("Mon, 02 Jan 2006 15:04:05 GMT")
+	tmpl, err := template.New("get_blob_list_auth_header").Parse(get_blob_list_auth_header)
+	if err != nil {
+		jww.ERROR.Println("bad tmpl")
+		jww.ERROR.Println(err)
+	}
+
+	s := SigningRequest{"GET",
+		"",
+		"",
+		0,
+		"",
+		"",
+		datetime,
+		"",
+		"",
+		"",
+		"",
+		"",
+		c.AccountName,
+		c.Name,
+		"",
+		"",
+		"container",
+	}
+
+	var builder strings.Builder
+	tmpl.Execute(&builder, s)
+
+	decodedKey, err := base64.StdEncoding.DecodeString(c.Key)
+	if err != nil {
+		jww.ERROR.Println("Bad base64 key: ", err)
+		os.Exit(1)
+	}
+
+	h := hmac.New(sha256.New, decodedKey)
+	h.Write([]byte(builder.String()))
+	authKey := fmt.Sprintf("SharedKey %s:%s", c.AccountName, base64.StdEncoding.EncodeToString(h.Sum(nil)))
+
+	target := fmt.Sprintf("%s?restype=container&comp=list", c.Endpoint)
+	jww.TRACE.Println(target)
+
+	req, err := retryablehttp.NewRequest("GET", target, nil)
+	if err != nil {
+		jww.ERROR.Println("Bad build of http request structure.", err)
+		os.Exit(1)
+	}
+	req.Header.Add("Authorization", authKey)
+	req.Header.Add("Date", datetime)
+	req.Header.Add("x-ms-version", "2017-11-09")
+
+	res, err := client.Do(req)
+	if err != nil {
+		jww.ERROR.Println("bad http request.", err)
+		os.Exit(1)
+	}
+	defer res.Body.Close()
+
+	var results EnumerationResults
+
+	resBody, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		jww.ERROR.Println(err)
+		os.Exit(1)
+	}
+
+	err = xml.Unmarshal(resBody, &results)
+	if err != nil {
+		jww.ERROR.Println(err)
+		os.Exit(1)
+	}
+
+	for _, blob := range results.Blobs {
+		fmt.Printf("%s %s %s %10d %s\n", blob.BlobType, blob.CreationTime, blob.Etag, blob.ContentLength, blob.Name)
+	}
+	return res.StatusCode
 }
 
 func (t *Transfer) putBlock(blockId string, b []byte, n int) int {
@@ -141,7 +222,7 @@ func (t *Transfer) putBlock(blockId string, b []byte, n int) int {
 		t.Container.Name,
 		t.BlobName,
 		blockId,
-		"block", //bad templates need a chomp so this needed
+		"block",
 	}
 
 	var builder strings.Builder
@@ -158,7 +239,6 @@ func (t *Transfer) putBlock(blockId string, b []byte, n int) int {
 	authKey := fmt.Sprintf("SharedKey %s:%s", t.Container.AccountName, base64.StdEncoding.EncodeToString(h.Sum(nil)))
 
 	target := fmt.Sprintf("%s/%s?comp=block&blockid=%s", t.Container.Endpoint, t.BlobName, blockId)
-	jww.TRACE.Println(target)
 
 	body := bytes.NewReader(b[:n])
 	req, err := retryablehttp.NewRequest("PUT", target, body)
@@ -193,7 +273,6 @@ func (t *Transfer) putBlockList(blockList []string) int {
 	}
 	var bodyBuilder strings.Builder
 	bodyTemplate.Execute(&bodyBuilder, blockList)
-	jww.TRACE.Println(bodyBuilder.String())
 
 	tmpl, err := template.New("put_block_list_auth_header").Parse(put_block_list_auth_header)
 	if err != nil {
@@ -216,8 +295,8 @@ func (t *Transfer) putBlockList(blockList []string) int {
 		t.Container.AccountName,
 		t.Container.Name,
 		t.BlobName,
-		"",          //no blockid for the list
-		"blocklist", //bad templates need a chomp so this needed
+		"",
+		"blocklist",
 	}
 
 	var builder strings.Builder
@@ -233,9 +312,7 @@ func (t *Transfer) putBlockList(blockList []string) int {
 	h.Write([]byte(builder.String()))
 	authKey := fmt.Sprintf("SharedKey %s:%s", t.Container.AccountName, base64.StdEncoding.EncodeToString(h.Sum(nil)))
 
-	//TODO blocklist is a repeat with signsig DRY
 	target := fmt.Sprintf("%s/%s?comp=blocklist", t.Container.Endpoint, t.BlobName)
-	jww.TRACE.Println(target)
 
 	body := strings.NewReader(bodyBuilder.String())
 	req, err := retryablehttp.NewRequest("PUT", target, body)
@@ -295,15 +372,12 @@ func (t *Transfer) Do() (statusCode int, err error) {
 		os.Exit(1)
 	}
 
-	//reader := bufio.NewReader(file)
-
 	buffer := make([]byte, t.BlockSize)
 
 	for i := range blockList {
 		token := <-tokenBucket
-		//n, err := reader.Read(buffer)
 		n, err := file.Read(buffer)
-		jww.TRACE.Printf("Read to block %d with length %d", i, n)
+		jww.TRACE.Printf("Read to block[%d] with length %d bytes", i, n)
 		if err != nil {
 			jww.ERROR.Println("Bad buffer read", err)
 			os.Exit(1)
@@ -326,14 +400,5 @@ func (t *Transfer) Do() (statusCode int, err error) {
 	jww.TRACE.Println("BlockList to put:", blockList)
 	resStatusCode := t.putBlockList(blockList)
 
-	//should be put blocklist response
 	return resStatusCode, nil
-}
-
-func computeBlockSize(fileSize int64) int {
-	//TODO Simplest for now but should be dynamic and configurable
-	blockSize := 1024
-	jww.INFO.Printf("BlockSize is %d and fileSize is %d", blockSize, fileSize)
-
-	return blockSize
 }

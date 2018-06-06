@@ -14,6 +14,8 @@
 package cmd
 
 import (
+	"time"
+
 	"github.com/spf13/cobra"
 	jww "github.com/spf13/jwalterweatherman"
 )
@@ -24,7 +26,15 @@ var lsCmd = &cobra.Command{
 	Long:  `list the contents of an azure blob storage container or a subset thereof.`,
 	Args:  cobra.ExactArgs(1),
 	Run: func(cmd *cobra.Command, args []string) {
-		jww.TRACE.Println("ls called")
+		start := time.Now()
+		target := args[0]
+
+		container, pathName, _ := parse(target)
+		statusCode := container.ListBlobs(pathName)
+		jww.INFO.Println(statusCode)
+
+		duration := time.Since(start)
+		jww.INFO.Printf("Elapsed: %v\n", duration)
 	},
 }
 

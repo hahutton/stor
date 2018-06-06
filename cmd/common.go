@@ -39,7 +39,7 @@ func isAlias(arg string) bool {
 	return strings.HasPrefix(arg, "//")
 }
 
-var aliasMatcher *regexp.Regexp = regexp.MustCompile("//([A-Za-z]+)/(.+)")
+var aliasMatcher *regexp.Regexp = regexp.MustCompile("//([A-Za-z]+)(/.*)")
 
 func parse(aliasedPath string) (container *blob.Container, pathName string, blockSize int) {
 	matches := aliasMatcher.FindStringSubmatch(aliasedPath)

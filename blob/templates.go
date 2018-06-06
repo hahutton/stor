@@ -13,6 +13,23 @@
 
 package blob
 
+const get_blob_list_auth_header string = `{{ .Verb }}
+{{ .ContentEncoding }}
+{{ .ContentLanguage }}
+
+{{ .ContentMD5 }}
+{{ .ContentType }}
+{{ .Date }}
+{{ .IfModifiedSince }}
+{{ .IfMatch }}
+{{ .IfNoneMatch }}
+{{ .IfUnmodifiedSince }}
+{{ .Range }}
+x-ms-version:2017-11-09
+/{{ .Account }}/{{ .Container }}
+comp:list
+restype:container`
+
 const put_block_auth_header string = `{{ .Verb }}
 {{ .ContentEncoding }}
 {{ .ContentLanguage }}
