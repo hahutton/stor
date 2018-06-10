@@ -96,8 +96,8 @@ func (c *Container) TransferIn(fileName string, fileSize int64, blobName string,
 		Container:   c,
 		Type:        IN,
 		FileName:    fileName,
-		BlobName:    blobName[1:],  //TODO evaluate this. Done quickly
-		Parallelism: 8,  //TODO used???
+		BlobName:    blobName[1:], //TODO evaluate this. Done quickly
+		Parallelism: 8,            //TODO used???
 		FileSize:    fileSize,
 		BlockSize:   blockSize,
 	}
