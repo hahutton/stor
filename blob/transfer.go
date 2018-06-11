@@ -79,7 +79,7 @@ type SigningRequest struct {
 	Range             string
 	Account           string
 	Container         string
-	FileName          string
+	FileName          string  //TODO is this right name??
 	BlockId           string
 	TypeName          string
 }
@@ -127,24 +127,13 @@ func (c *Container) ListBlobs(prefix string) int {
 		jww.ERROR.Println(err)
 	}
 
-	s := SigningRequest{"GET",
-		"",
-		"",
-		0,
-		"",
-		"",
-		datetime,
-		"",
-		"",
-		"",
-		"",
-		"",
-		c.AccountName,
-		c.Name,
-		"",
-		"",
-		"container",
-	}
+	s := SigningRequest{}
+	s.Verb = "GET"
+	s.ContentLength = 0
+	s.Date = datetime
+	s.Account = c.AccountName
+	s.Container = c.Name
+	s.TypeName = "container"
 
 	var builder strings.Builder
 	tmpl.Execute(&builder, s)
@@ -206,24 +195,15 @@ func (t *Transfer) putBlock(blockId string, b []byte, n int) int {
 		fmt.Println(err)
 	}
 
-	s := SigningRequest{"PUT",
-		"",
-		"",
-		n,
-		"",
-		"",
-		datetime,
-		"",
-		"",
-		"",
-		"",
-		"",
-		t.Container.AccountName,
-		t.Container.Name,
-		t.BlobName,
-		blockId,
-		"block",
-	}
+	s := SigningRequest{}
+	s.Verb = "PUT"
+	s.ContentLength = n
+	s.Date = datetime
+	s.Account = t.Container.AccountName
+	s.Container = t.Container.Name
+	s.FileName = t.BlobName
+	s.BlockId = blockId
+	s.TypeName = "block"
 
 	var builder strings.Builder
 	tmpl.Execute(&builder, s)
@@ -280,24 +260,14 @@ func (t *Transfer) putBlockList(blockList []string) int {
 		os.Exit(1)
 	}
 
-	s := SigningRequest{"PUT",
-		"",
-		"",
-		len(bodyBuilder.String()),
-		"",
-		"",
-		datetime,
-		"",
-		"",
-		"",
-		"",
-		"",
-		t.Container.AccountName,
-		t.Container.Name,
-		t.BlobName,
-		"",
-		"blocklist",
-	}
+	s := SigningRequest{}
+	s.Verb = "PUT"
+	s.ContentLength = len(bodyBuilder.String())
+	s.Date = datetime
+	s.Account = t.Container.AccountName
+	s.Container = t.Container.Name
+	s.FileName = t.BlobName
+	s.TypeName = "blocklist"
 
 	var builder strings.Builder
 	tmpl.Execute(&builder, s)
