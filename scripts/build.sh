@@ -13,6 +13,8 @@ else
     GIT_BRANCH_REV=$(git rev-parse master)
 fi
 
+VERSION="0.2.$GIT_BUILDS"
+
 LDX_VERSION="github.com/hahutton/stor/cmd.Version=$GIT_BUILDS"
 LDX_MASTER="github.com/hahutton/stor/cmd.MasterRev=$GIT_MASTER_REV"
 LDX_BRANCH="github.com/hahutton/stor/cmd.BranchRev=$GIT_BRANCH_REV"
@@ -30,7 +32,7 @@ cd "$DIR"
 
 # Determine the arch/os combos we're building for
 XC_ARCH=${XC_ARCH:-"386 amd64"}
-XC_OS=${XC_OS:-"solaris darwin freebsd linux windows"}
+XC_OS=${XC_OS:-"darwin linux windows"}
 
 # Delete the old dir
 echo "==> Removing old directory..."
@@ -81,7 +83,7 @@ if [ "${STOR_DEV}x" = "x" ]; then
         echo "--> ${OSARCH}"
 
         pushd $PLATFORM >/dev/null 2>&1
-        zip ../${OSARCH}.zip ./*
+        zip ../${OSARCH}-${VERSION}.zip ./*
         popd >/dev/null 2>&1
     done
 fi
