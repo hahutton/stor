@@ -9,9 +9,8 @@ GOARCH=$(shell go env GOARCH)
 GOPATH=$(shell go env GOPATH)
 
 all: dev
-	echo ${GOFILES}
 
-bin:
+dist:
 	@mkdir -p bin/
 	@GOTAGS='$(GOTAGS)' sh -c "'$(CURDIR)/scripts/build.sh'"
 
