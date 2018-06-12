@@ -191,8 +191,8 @@ func (t *Transfer) putBlock(blockId string, b []byte, n int) int {
 	datetime := time.Now().UTC().Format("Mon, 02 Jan 2006 15:04:05 GMT")
 	tmpl, err := template.New("put_block_auth_header").Parse(put_block_auth_header)
 	if err != nil {
-		fmt.Println("bad tmpl")
-		fmt.Println(err)
+		jww.ERROR.Println("bad tmpl")
+		jww.ERROR.Println(err)
 	}
 
 	s := SigningRequest{}
