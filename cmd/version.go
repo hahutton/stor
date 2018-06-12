@@ -22,6 +22,7 @@ import (
 var PrimaryVersion string = "0.2"
 var Version string
 var MasterRev string
+var BranchName string
 var BranchRev string
 
 // versionCmd represents the version command
@@ -33,8 +34,10 @@ master and branch. If branch revision exists then this binary is a development b
 revisions match to https://github.com/hahutton/stor revisions.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		fmt.Printf("stor Block Storage Command Tool v%s.%s\n", PrimaryVersion, Version)
-		fmt.Printf("master revision %s\n", MasterRev)
-		fmt.Printf("branch revision %s\n", BranchRev)
+		fmt.Printf("[%s master]\n", MasterRev)
+		if BranchRev != "" {
+			fmt.Printf("[%s %s]\n", BranchRev, BranchName)
+		}
 	},
 }
 

@@ -6,20 +6,21 @@ set -e
 export CGO_ENABLED=0
 
 GIT_BUILDS=$(git rev-list --count $(git merge-base master HEAD)).$(git rev-list --count ^master HEAD)
-GIT_MASTER_REV=$(git rev-parse master)
-if [ "$(git rev-parse --abbrev-ref HEAD)" != "master" ]; then
-    GIT_BRANCH_REV=$(git rev-parse HEAD)
-else
-    GIT_BRANCH_REV=$(git rev-parse master)
-fi
-
+GIT_MASTER_REV=$(git rev-parse --short master)
+GIT_BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)
 VERSION="0.2.$GIT_BUILDS"
 
 LDX_VERSION="github.com/hahutton/stor/cmd.Version=$GIT_BUILDS"
 LDX_MASTER="github.com/hahutton/stor/cmd.MasterRev=$GIT_MASTER_REV"
-LDX_BRANCH="github.com/hahutton/stor/cmd.BranchRev=$GIT_BRANCH_REV"
 
-export GOLDFLAGS="-X $LDX_VERSION -X $LDX_MASTER -X $LDX_BRANCH"
+if [ "$GIT_BRANCH_NAME" != "master" ]; then
+    GIT_BRANCH_REV=$(git rev-parse --short HEAD)
+	LDX_BRANCH_NAME="github.com/hahutton/stor/cmd.BranchName=$GIT_BRANCH_NAME"
+	LDX_BRANCH_REV="github.com/hahutton/stor/cmd.BranchRev=$GIT_BRANCH_REV"
+	export GOLDFLAGS="-X $LDX_VERSION -X $LDX_MASTER -X $LDX_BRANCH_REV -X $LDX_BRANCH_NAME"
+else
+	export GOLDFLAGS="-X $LDX_VERSION -X $LDX_MASTER"
+fi
 
 echo $GOLDFLAGS
 # Get the parent directory of where this script is.
