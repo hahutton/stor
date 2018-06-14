@@ -14,24 +14,47 @@
 package cmd
 
 import (
+	"fmt"
 	"time"
 
+	"github.com/hahutton/stor/providers"
 	"github.com/spf13/cobra"
 	jww "github.com/spf13/jwalterweatherman"
 )
 
+var Long bool
+var NoHeader bool
+
+// lsCmd represents the ls command
 var lsCmd = &cobra.Command{
-	Use:   "ls //alias/[pathname]",
-	Short: "ls (list) blobs in an azure storage container",
-	Long:  `list the contents of an azure blob storage container or a subset thereof.`,
-	Args:  cobra.ExactArgs(1),
+	Use:   "ls",
+	Short: "A brief description of your command",
+	Long: `A longer description that spans multiple lines and likely contains examples
+and usage of using your command. For example:
+
+Cobra is a CLI library for Go that empowers applications.
+This application is a tool to generate the needed files
+to quickly create a Cobra application.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		start := time.Now()
-		target := args[0]
 
-		container, pathName, _ := parse(target)
-		statusCode := container.ListBlobs(pathName)
-		jww.INFO.Println(statusCode)
+		sourceAlias, sourcePathName := providers.Parse(args[0])
+
+		sourceProvider := providers.Create(sourceAlias)
+		sourceInfos := sourceProvider.Glob(sourcePathName)
+
+		if !NoHeader {
+			fmt.Printf("%s\n", sourcePathName)
+		}
+
+		var layout string = "Jan 02 15:04"
+		for _, si := range sourceInfos {
+			if Long {
+				fmt.Printf("%s  %s %s %10d %s\n", si.BlobType, si.LastModified.Format(layout), si.Etag, si.Length, si.Name)
+			} else {
+				fmt.Println(si.Name)
+			}
+		}
 
 		duration := time.Since(start)
 		jww.INFO.Printf("Elapsed: %v\n", duration)
@@ -49,5 +72,6 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// lsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	lsCmd.Flags().BoolVarP(&Long, "long", "l", false, "included extended attributes")
+	lsCmd.Flags().BoolVarP(&NoHeader, "noheader", "n", false, "remove header from output")
 }

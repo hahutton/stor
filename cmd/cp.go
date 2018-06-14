@@ -1,4 +1,4 @@
-// Copyright © 2018 Hays Hutton <hays.hutton@gmail.com>
+// Copyright © 2018 NAME HERE <EMAIL ADDRESS>
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
@@ -15,70 +15,74 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"path/filepath"
+	"strings"
 	"time"
 
+	"github.com/hahutton/stor/providers"
 	"github.com/spf13/cobra"
 	jww "github.com/spf13/jwalterweatherman"
 )
 
+// cpCmd represents the cp command
 var cpCmd = &cobra.Command{
-	Use:   "cp source destination",
-	Short: "copy source destination",
-	Long:  `cp copies files and/or directories to and from Azure Storage`,
+	Use:   "cp //alias/source //alias/target",
+	Short: "stor cp [//alias/]source_file [//alias/]target_file",
+	Long:  `provider cp`,
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		start := time.Now()
-		src := args[0]
-		target := args[1]
 
-		if isAlias(src) && !isAlias(target) {
-			jww.ERROR.Println("cp implemented for push only currently")
-			os.Exit(1)
-		}
+		sourceAlias, sourcePathName := providers.Parse(args[0])
+		targetAlias, targetPathName := providers.Parse(args[1])
+		jww.INFO.Printf("sourceAlias: %s, sourcePathName: %s", sourceAlias, sourcePathName)
+		jww.INFO.Printf("targetAlias: %s, targetPathName: %s", targetAlias, targetPathName)
 
-		if isGlob(src) && !isDir(target) {
-			jww.ERROR.Printf("Globbed src must have dir target. %s -> %s\n", src, target)
-			os.Exit(1)
-		}
+		sourceProvider := providers.Create(sourceAlias)
+		targetProvider := providers.Create(targetAlias)
 
-		fileNames, err := filepath.Glob(src)
-		if err != nil {
-			jww.ERROR.Printf("Bad pattern for files: %s", src)
-			jww.ERROR.Println(err)
-			os.Exit(1)
-		}
-		jww.TRACE.Println("FileNames:", fileNames)
+		sourceInfos := sourceProvider.Glob(sourcePathName)
 
-		container, pathName, blockSize := parse(target)
+		for _, sourceInfo := range sourceInfos {
 
-		for _, fileName := range fileNames {
+			blockCount, blockSize := providers.CalculateBlocks(sourceInfo)
 
-			fileInfo, _ := os.Stat(fileName)
+			var targetName string
 
-			var blobName string
-			//TODO do you want to flatten it??
-			//fileName = fileInfo.Name()
-
-			if isDir(pathName) {
-				blobName = fmt.Sprintf("%s%s", pathName, fileName)
+			if isDir(targetPathName) {
+				targetName = fmt.Sprintf("%s%s", targetPathName, sourceInfo.Name)
 			} else {
-				blobName = pathName
+				targetName = targetPathName
 			}
-			transfer := container.TransferIn(fileName, fileInfo.Size(), blobName, blockSize)
-			resp, err := transfer.Do()
-			if err != nil {
-				jww.ERROR.Println(err)
-				os.Exit(1)
-			}
-			jww.INFO.Println(resp)
+
+			tokenBucket := providers.InitTokenBucket()
+
+			//starting with blockCount here since that shouldn't backpressure at all
+			//might want to use this to govern memory usage at some point??
+			//at that point introduce config var to "dial" this
+			transferChan := make(chan *providers.Block, blockCount) //TODO this could kill on memory. fast big read
+			sourceProvider.Open(sourceInfo.PathName, transferChan, tokenBucket, blockCount, blockSize)
+			jww.INFO.Println(targetName)
+			targetProvider.Create(targetName, transferChan, blockCount, tokenBucket)
 		}
 		duration := time.Since(start)
 		jww.INFO.Printf("Elapsed: %v\n", duration)
 	},
 }
 
+func isDir(path string) bool {
+	return strings.HasSuffix(path, "/")
+}
+
 func init() {
 	RootCmd.AddCommand(cpCmd)
+
+	// Here you will define your flags and configuration settings.
+
+	// Cobra supports Persistent Flags which will work for this command
+	// and all subcommands, e.g.:
+	// cpCmd.PersistentFlags().String("foo", "", "A help for foo")
+
+	// Cobra supports local flags which will only run when this command
+	// is called directly, e.g.:
+	// cpCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
 }
