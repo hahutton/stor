@@ -25,9 +25,50 @@ import (
 
 // cpCmd represents the cp command
 var cpCmd = &cobra.Command{
-	Use:   "cp //alias/source //alias/target",
-	Short: "stor cp [//alias/]source_file [//alias/]target_file",
-	Long:  `provider cp`,
+	Use: "cp [//alias/]source_file [//alias/]target_file",
+	Short: "Copy blobs between providers with cp like semantics",
+	Long:  `Copy blobs between cloud storage and/or the local filesystem.
+
+cp utilizes an alias for different providers. The alias is set in the config
+file. It contains necessary info to connect to cloud storage accounts such as account
+names and keys.
+
+Local file system [//file/]source_file can be a file name or a standard go glob '*'.
+The glob semantics are specific to the go language.
+
+The pattern syntax is:
+
+pattern:
+	{ term }
+term:
+	'*'         matches any sequence of non-Separator characters
+	'?'         matches any single non-Separator character
+	'[' [ '^' ] { character-range } ']'
+				character class (must be non-empty)
+	c           matches character c (c != '*', '?', '\\', '[')
+	'\\' c      matches character c
+
+character-range:
+	c           matches character c (c != '\\', '-', ']')
+	'\\' c      matches character c
+	lo '-' hi   matches character c for lo <= c <= hi
+
+Requires pattern to match all of name, not just a substring. 
+
+On Windows, escaping is disabled.  Instead, '\\' is treated as path
+separator.
+
+
+Object store //alias/source_file can be a file name or a prefix.
+The match semantics are specific to the cloud providers.
+
+The prefix semantics match the substring of characters at the beginning of the key.
+
+pattern:
+    { term }
+term:
+	c           matches character c (c != '*', '?', '\\', '[')
+`,
 	Args:  cobra.ExactArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		start := time.Now()
