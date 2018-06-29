@@ -52,7 +52,6 @@ The prefix semantics match the substring of characters at the beginning of the k
 
 		argCount := len(args)
 		targetPosition := argCount - 1
-		lastSourcePosition := argCount - 2
 
 		sourceAlias, sourcePathName := providers.Parse(args[0])
 		targetAlias, targetPathName := providers.Parse(args[targetPosition])
@@ -63,7 +62,8 @@ The prefix semantics match the substring of characters at the beginning of the k
 		targetProvider := providers.Create(targetAlias)
 
 		var sourceInfos []*providers.BlobInfo
-		for _, arg := range args[:lastSourcePosition] {
+		for _, arg := range args[:targetPosition] {
+			jww.INFO.Println("arg:", arg)
 			statInfo := sourceProvider.Stat(arg)
 			if !statInfo.IsDir {
 				sourceInfos = append(sourceInfos, statInfo)
