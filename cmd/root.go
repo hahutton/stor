@@ -86,6 +86,5 @@ func initConfig() {
 	if err != nil {
 		jww.ERROR.Println("Bad config file:", viper.ConfigFileUsed())
 		jww.ERROR.Println("Bad config file:", err)
-		os.Exit(1)
 	}
 }
