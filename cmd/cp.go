@@ -74,17 +74,18 @@ The prefix semantics match the substring of characters at the beginning of the k
 							fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
 							return err
 						}
-						blobInfo := &providers.BlobInfo{}
-						blobInfo.Name = info.Name()
-						blobInfo.PathName = path
-						blobInfo.IsDir = info.IsDir()
-						blobInfo.Length = info.Size()
-						blobInfo.LastModified = info.ModTime()
-						sourceInfos = append(sourceInfos, blobInfo)
+						if !info.IsDir() {
+							blobInfo := &providers.BlobInfo{}
+							blobInfo.Name = info.Name()
+							blobInfo.PathName = path
+							blobInfo.IsDir = info.IsDir()
+							blobInfo.Length = info.Size()
+							blobInfo.LastModified = info.ModTime()
+							sourceInfos = append(sourceInfos, blobInfo)
+						}
 						return nil
 					})
 				}
-
 			}
 		}
 
@@ -102,7 +103,7 @@ The prefix semantics match the substring of characters at the beginning of the k
 			var targetName string
 
 			if isDir(targetPathName) {
-				targetName = fmt.Sprintf("%s%s", targetPathName, sourceInfo.Name)
+				targetName = fmt.Sprintf("%s%s", targetPathName, sourceInfo.PathName)
 			} else {
 				targetName = targetPathName
 			}
