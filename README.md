@@ -61,12 +61,15 @@ Azure Storage Restful APIs.
 
 ### **stor** ls
 
-The ls (list) command lists the blobs in a container with globbing analagous to shells (without **).
+The ls (list) command lists the blobs in a container with prefix matching which is what most
+cloud object stores provide. Beyond the appearance of a file system, cloud oject stores namespaces
+are actually flat.
+
 The switches change the output and fmt of the results.
 
 ### **stor** rm
 
-The rm (remove) command deletes blobs. Many blobs can be removed at once with pattern globbing.
+The rm (remove) command deletes blobs. Many blobs can be removed at once with prefix matching.
 
 
 ### **stor** init
@@ -80,5 +83,8 @@ stor with a --config parameter to override that or even placed in the pwd of sto
 **stor** performs all data movement commands concurrently by breaking files/blobs into blocks which can be moved
 over https with multiple GETs or PUTs. The files/blobs are either chunked or stitched previous to PUTs or after GETs.
 With sufficient bandwidth and memory moves can be maximized for available resources. Both parallelism and block size
-can be configured. 
+can be configured. **stor** retries http reqeusts on failure but does not store any state.
+
+**stor** breaks files/blobs into blocks which allow for parallel processing. The block size can be set in the .stor.yml
+configuration file. This parameter directly impacts memory usage and the upper bounds of a files size. 
 
