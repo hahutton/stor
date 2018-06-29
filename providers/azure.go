@@ -321,6 +321,13 @@ func (azure *AzureProvider) Open(name string, stream chan<- *Block, tokenBucket 
 	return nil
 }
 
+func (azure *AzureProvider) Stat(name string) *BlobInfo {
+	//There are no directories actually in blob stores
+	blobInfo := &BlobInfo{}
+	blobInfo.IsDir = false
+	return blobInfo
+}
+
 func (azure *AzureProvider) Glob(pattern string) []*BlobInfo {
 	datetime := time.Now().UTC().Format("Mon, 02 Jan 2006 15:04:05 GMT")
 	tmpl, err := template.New("get_blob_list_auth_header").Parse(get_blob_list_auth_header)
@@ -387,6 +394,7 @@ func (azure *AzureProvider) Glob(pattern string) []*BlobInfo {
 	for i, blob := range results.Blobs {
 		var blobInfo *BlobInfo = &BlobInfo{}
 		blobInfo.Name = blob.Name
+		blobInfo.PathName = blob.Name
 		blobInfo.Length = blob.ContentLength
 		blobInfo.CreatedAt, _ = time.Parse(layout, blob.CreationTime)
 		blobInfo.LastModified, _ = time.Parse(layout, blob.LastModified)

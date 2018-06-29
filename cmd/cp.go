@@ -15,6 +15,8 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"path/filepath"
 	"strings"
 	"time"
 
@@ -23,65 +25,75 @@ import (
 	jww "github.com/spf13/jwalterweatherman"
 )
 
+var dryRun bool
+var recurse bool
+
 // cpCmd represents the cp command
 var cpCmd = &cobra.Command{
-	Use: "cp [//alias/]source_file [//alias/]target_file",
+	Use:   "cp [//alias/]source_file... [//alias/]target_file",
 	Short: "Copy blobs between providers with cp like semantics",
-	Long:  `Copy blobs between cloud storage and/or the local filesystem.
+	Long: `Copy blobs between cloud storage and/or the local filesystem.
 
 cp utilizes an alias for different providers. The alias is set in the config
 file. It contains necessary info to connect to cloud storage accounts such as account
 names and keys.
 
-Local file system [//file/]source_file can be a file name or a standard go glob '*'.
-The glob semantics are specific to the go language.
-
-The pattern syntax is:
-
-pattern:
-	{ term }
-term:
-	'*'         matches any sequence of non-Separator characters
-	'?'         matches any single non-Separator character
-	'[' [ '^' ] { character-range } ']'
-				character class (must be non-empty)
-	c           matches character c (c != '*', '?', '\\', '[')
-	'\\' c      matches character c
-
-character-range:
-	c           matches character c (c != '\\', '-', ']')
-	'\\' c      matches character c
-	lo '-' hi   matches character c for lo <= c <= hi
-
-Requires pattern to match all of name, not just a substring. 
-
-On Windows, escaping is disabled.  Instead, '\\' is treated as path
-separator.
-
+Local file system [//file/]source_file... can be a file name(s) or directories. If directory and 
+not -R then it will be skipped. The typical shell expands * before passing it to any cmd. stor handles this
+on the local file provider by handling multiple sources with the last positional arg being the target.
 
 Object store //alias/source_file can be a file name or a prefix.
 The match semantics are specific to the cloud providers.
 
-The prefix semantics match the substring of characters at the beginning of the key.
-
-pattern:
-    { term }
-term:
-	c           matches character c (c != '*', '?', '\\', '[')
-`,
-	Args:  cobra.ExactArgs(2),
+The prefix semantics match the substring of characters at the beginning of the key.`,
+	Args: cobra.MinimumNArgs(2),
 	Run: func(cmd *cobra.Command, args []string) {
 		start := time.Now()
 
+		argCount := len(args)
+		targetPosition := argCount - 1
+		lastSourcePosition := argCount - 2
+
 		sourceAlias, sourcePathName := providers.Parse(args[0])
-		targetAlias, targetPathName := providers.Parse(args[1])
+		targetAlias, targetPathName := providers.Parse(args[targetPosition])
 		jww.INFO.Printf("sourceAlias: %s, sourcePathName: %s", sourceAlias, sourcePathName)
 		jww.INFO.Printf("targetAlias: %s, targetPathName: %s", targetAlias, targetPathName)
 
 		sourceProvider := providers.Create(sourceAlias)
 		targetProvider := providers.Create(targetAlias)
 
-		sourceInfos := sourceProvider.Glob(sourcePathName)
+		var sourceInfos []*providers.BlobInfo
+		for _, arg := range args[:lastSourcePosition] {
+			statInfo := sourceProvider.Stat(arg)
+			if !statInfo.IsDir {
+				sourceInfos = append(sourceInfos, statInfo)
+			} else {
+				if recurse {
+					filepath.Walk(arg, func(path string, info os.FileInfo, err error) error {
+						if err != nil {
+							fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
+							return err
+						}
+						blobInfo := &providers.BlobInfo{}
+						blobInfo.Name = info.Name()
+						blobInfo.PathName = path
+						blobInfo.IsDir = info.IsDir()
+						blobInfo.Length = info.Size()
+						blobInfo.LastModified = info.ModTime()
+						sourceInfos = append(sourceInfos, blobInfo)
+						return nil
+					})
+				}
+
+			}
+		}
+
+		if dryRun {
+			for _, sourceInfo := range sourceInfos {
+				fmt.Printf("%s\n", sourceInfo.PathName)
+			}
+			os.Exit(0)
+		}
 
 		for _, sourceInfo := range sourceInfos {
 
@@ -125,5 +137,6 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// cpCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	cpCmd.Flags().BoolVarP(&dryRun, "dry-run", "d", false, "show set of blobs to be copied but don't copy")
+	cpCmd.Flags().BoolVarP(&recurse, "Recurse", "R", false, "Recurse directories mainly for local file provider")
 }

@@ -63,6 +63,23 @@ func (fp *FileProvider) Open(name string, stream chan<- *Block, tokenBucket chan
 	return nil
 }
 
+func (fp *FileProvider) Stat(name string) *BlobInfo {
+	fileInfo, err := os.Stat(name)
+	if err != nil {
+		jww.ERROR.Println("Bad filename Stat:", name)
+		jww.ERROR.Println(err)
+		os.Exit(1)
+	}
+	var blobInfo *BlobInfo = &BlobInfo{}
+	blobInfo.Name = fileInfo.Name()
+	blobInfo.PathName = name
+	blobInfo.Length = fileInfo.Size()
+	blobInfo.LastModified = fileInfo.ModTime()
+	blobInfo.BlobType = "FileSystem"
+	blobInfo.IsDir = fileInfo.IsDir()
+	return blobInfo
+}
+
 func (fp *FileProvider) Glob(pattern string) []*BlobInfo {
 	paths, err := filepath.Glob(pattern)
 	if err != nil {

@@ -37,6 +37,7 @@ const (
 
 type BlobInfo struct {
 	Name         string
+	PathName     string
 	CreatedAt    time.Time
 	LastModified time.Time
 	Length       int64
@@ -45,7 +46,7 @@ type BlobInfo struct {
 	Type         string
 	MD5          string
 	BlobType     string
-	PathName     string
+	IsDir        bool
 }
 
 type Block struct {
@@ -57,6 +58,7 @@ type Provider interface {
 	Create(name string, stream <-chan *Block, blockCount int, tokenBucket chan int) error
 	Open(name string, stream chan<- *Block, tokenBucket chan int, blockCount int, blockSize int) error
 	Glob(pattern string) []*BlobInfo
+	Stat(name string) *BlobInfo
 }
 
 func Create(alias string) Provider {

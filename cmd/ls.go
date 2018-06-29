@@ -27,14 +27,9 @@ var NoHeader bool
 
 // lsCmd represents the ls command
 var lsCmd = &cobra.Command{
-	Use:   "ls",
-	Short: "A brief description of your command",
-	Long: `A longer description that spans multiple lines and likely contains examples
-and usage of using your command. For example:
-
-Cobra is a CLI library for Go that empowers applications.
-This application is a tool to generate the needed files
-to quickly create a Cobra application.`,
+	Use:   "ls [//alias/]source_name [flags]",
+	Short: "List blobs",
+	Long:  `List blobs.`,
 	Run: func(cmd *cobra.Command, args []string) {
 		start := time.Now()
 
