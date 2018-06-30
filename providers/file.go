@@ -64,7 +64,7 @@ func (fp *FileProvider) Open(name string, stream chan<- *Block, tokenBucket chan
 }
 
 func (fp *FileProvider) Stat(name string) *BlobInfo {
-	fileInfo, err := os.Stat(name)
+	fileInfo, err := os.Lstat(name)
 	if err != nil {
 		jww.ERROR.Println("Bad filename Stat:", name)
 		jww.ERROR.Println(err)

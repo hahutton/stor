@@ -74,7 +74,7 @@ The prefix semantics match the substring of characters at the beginning of the k
 							fmt.Printf("prevent panic by handling failure accessing a path %q: %v\n", path, err)
 							return err
 						}
-						if !info.IsDir() {
+						if info.Mode().IsRegular() {
 							blobInfo := &providers.BlobInfo{}
 							blobInfo.Name = info.Name()
 							blobInfo.PathName = path
