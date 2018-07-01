@@ -59,6 +59,7 @@ type Provider interface {
 	Open(name string, stream chan<- *Block, tokenBucket chan int, blockCount int, blockSize int) error
 	Glob(pattern string) []*BlobInfo
 	Stat(name string) *BlobInfo
+	ProviderName() string
 }
 
 func Create(alias string) Provider {

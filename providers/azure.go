@@ -317,6 +317,10 @@ func (azure *AzureProvider) Create(name string, stream <-chan *Block, blockCount
 	return nil
 }
 
+func (azure *AzureProvider) ProviderName() string {
+	return "azure"
+}
+
 func (azure *AzureProvider) Open(name string, stream chan<- *Block, tokenBucket chan int, blockCount int, blockSize int) error {
 	return nil
 }

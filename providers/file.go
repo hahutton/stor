@@ -23,6 +23,10 @@ import (
 type FileProvider struct {
 }
 
+func (fp *FileProvider) ProviderName() string {
+	return "file"
+}
+
 func (fp *FileProvider) Create(name string, stream <-chan *Block, blockCount int, tokenBucket chan int) error {
 	return nil
 }

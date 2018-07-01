@@ -61,6 +61,11 @@ The prefix semantics match the substring of characters at the beginning of the k
 		sourceProvider := providers.Create(sourceAlias)
 		targetProvider := providers.Create(targetAlias)
 
+		if sourceProvider.ProviderName() != "file" && targetProvider.ProviderName() != "azure" {
+			jww.ERROR.Println("cp currently implements file source and azure target only")
+			os.Exit(1)
+		}
+
 		var sourceInfos []*providers.BlobInfo
 		for _, arg := range args[:targetPosition] {
 			jww.INFO.Println("arg:", arg)
