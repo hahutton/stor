@@ -30,20 +30,21 @@ The **root** command provides top level usage and shows the full set of subcomma
 After **stor** has been downloaded, run it to see the various sub commands: 
 
 ```bash
-➜  ~ ./stor 
+➜  stor git:(master) ✗ stor
 stor is a cli tool to interact with azure storage.
 While stor aims to be a sharp tool with a more unix philosophy,
-azcopy should always be considered. stor aims to have no dependencies
-which is a difference.
+azcopy should be used whenever possible due to its robustness and
+feature set. stor aims to have no dependencies which is a difference.
 
 Usage:
   stor [command]
 
 Available Commands:
-  cp          copy source destination
+  cp          Copy blobs between providers with cp like semantics
   help        Help about any command
-  ls          ls /alias/path...
-  rm          remove a blob or blobs
+  init        Create a skeleton config file
+  ls          List blobs
+  version     version information
 
 Flags:
       --config string   config file (default is ./.stor.yml then $HOME/.stor.yml)
