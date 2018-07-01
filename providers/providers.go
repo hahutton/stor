@@ -30,9 +30,9 @@ import (
 // or maybe config file general level of config where could assume file system as target or source
 // and thereby up the max vals for a particular provider instead of lowest common denominator
 const (
-	MAX_BLOCKS     = 10000             //AWS Max block count, Azure has 50000
-	MIN_BLOCK_SIZE = 1024 * 1024 * 5   //AWS min size, Azure no min
-	MAX_BLOCK_SIZE = 1024 * 1024 * 100 //Azure max size, AWS 5GB
+	MAX_BLOCKS     = 50000             //Azure Max block count
+	MIN_BLOCK_SIZE = 1024 * 5
+	MAX_BLOCK_SIZE = 1024 * 1024 * 100 //Azure max size
 )
 
 type BlobInfo struct {
