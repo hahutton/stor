@@ -56,11 +56,9 @@ Use "stor [command] --help" for more information about a command.
  
 ### **stor** cp
 
-The cp (copy) command pushes files to Azure Storage or pulls blobs to the local file system.
-It performs either function in parallel by breaking individual files into blocks which are
-PUT or requesting different ranges of blobs to GET with multiple, concurrent http calls to  
-Azure Storage Restful APIs.
-
+The cp (copy) command pushes files to Azure Storage from the local file system.
+It performs the function in parallel by breaking individual files into blocks which are
+PUT with multiple, concurrent http calls to Azure Storage Restful APIs.
 
 ### **stor** ls
 
@@ -70,9 +68,9 @@ are actually flat.
 
 The switches change the output and fmt of the results.
 
-### **stor** rm
+### **stor** version
 
-The rm (remove) command deletes blobs. Many blobs can be removed at once with prefix matching.
+The version command outputs the binary's version.
 
 
 ### **stor** init
@@ -84,10 +82,11 @@ stor with a --config parameter to override that or even placed in the pwd of sto
 ## Core Features
 
 **stor** performs all data movement commands concurrently by breaking files/blobs into blocks which can be moved
-over https with multiple GETs or PUTs. The files/blobs are either chunked or stitched previous to PUTs or after GETs.
+over https with multiple PUTs. The files/blobs are chunked previous to PUTs.
 With sufficient bandwidth and memory moves can be maximized for available resources. Both parallelism and block size
 can be configured. **stor** retries http reqeusts on failure but does not store any state.
 
 **stor** breaks files/blobs into blocks which allow for parallel processing. The block size can be set in the .stor.yml
-configuration file. This parameter directly impacts memory usage and the upper bounds of a files size. 
+configuration file as can the max_concurrency setting. These parameters directly impact memory usage and the upper bounds
+of a files size. 
 
