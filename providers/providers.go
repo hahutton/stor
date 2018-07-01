@@ -103,7 +103,9 @@ func Parse(aliasedPath string) (alias string, pathName string) {
 }
 
 func InitTokenBucket() chan int {
-	bucketSize := runtime.NumCPU() * 10 //TODO parameterize this const
+	viper.SetDefault("max_concurrency", runtime.NumCPU() * 10)
+	bucketSize := viper.GetInt("max_concurrency")
+	jww.TRACE.Println("Token Bucket Size: ", bucketSize)
 	tokenBucket := make(chan int, bucketSize)
 	for i := 0; i < bucketSize; i++ {
 		tokenBucket <- i
