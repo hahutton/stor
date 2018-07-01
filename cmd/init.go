@@ -22,8 +22,7 @@ import (
 )
 
 
-const skeleton_config_file string = `
-# Config for stor
+const skeleton_config_file string = `# Config for stor
 
 # Each aliases sub key is an alias for a storage account / container combo which is in the url
 # plus its storage account key
