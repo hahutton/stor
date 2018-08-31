@@ -8,18 +8,18 @@ Single binary built specifically for macosx, linux and windows thanks to Go.
 
 
 ```bash
-wget  https://hahutton.blob.core.windows.net/stor/downloads/darwin_386-0.2.27.0.zip
-wget  https://hahutton.blob.core.windows.net/stor/downloads/darwin_amd64-0.2.27.0.zip
+wget  https://hahutton.blob.core.windows.net/stor/downloads/darwin_386-0.2.30.0.zip
+wget  https://hahutton.blob.core.windows.net/stor/downloads/darwin_amd64-0.2.30.0.zip
 ```
 
 ```bash
-wget  https://hahutton.blob.core.windows.net/stor/downloads/linux_386-0.2.27.0.zip
-wget  https://hahutton.blob.core.windows.net/stor/downloads/linux_amd64-0.2.27.0.zip
+wget  https://hahutton.blob.core.windows.net/stor/downloads/linux_386-0.2.30.0.zip
+wget  https://hahutton.blob.core.windows.net/stor/downloads/linux_amd64-0.2.30.0.zip
 ```
 
 ```bash
-wget  https://hahutton.blob.core.windows.net/stor/downloads/windows_386-0.2.27.0.zip
-wget  https://hahutton.blob.core.windows.net/stor/downloads/windows_amd64-0.2.27.0.zip
+wget  https://hahutton.blob.core.windows.net/stor/downloads/windows_386-0.2.30.0.zip
+wget  https://hahutton.blob.core.windows.net/stor/downloads/windows_amd64-0.2.30.0.zip
 ```
 
 ### **stor** Command 
